@@ -1,0 +1,1 @@
+Day 1 - User → Upload video → Server → Save file → Play video
