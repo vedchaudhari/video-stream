@@ -1,6 +1,6 @@
-const Redis = require("ioredis");
+import { Redis } from "ioredis";
 
-const redis = new Redis(process.env.REDIS_URL as string, {
+const redis = new Redis(process.env.REDIS_URI as string, {
   maxRetriesPerRequest: null, // required for BullMQ
 });
 
@@ -11,6 +11,14 @@ redis.on("connect", () => {
 
 redis.on("ready", () => {
   console.log("✅ Redis ready");
+});
+
+redis.on("error", (err) => {
+  console.error("❌ Redis error:", err);
+});
+
+redis.on("reconnecting", () => {
+  console.log("🔄 Redis reconnecting...");
 });
 
 
