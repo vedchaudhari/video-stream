@@ -1,17 +1,19 @@
-//express app setup
 import express from "express";
-import cors from "cors";
-import authRoutes from "./modules/auth/auth.routes.js"; 
+import uploadRoutes from "./routes/upload.routes.js";
 
 const app = express();
 
 app.use(express.json());
+app.use(express.static("public"));
 
+app.use("/api/health", (req, res) => { res.send("Health check working fine") });
 
-app.get("/", (req,res) => {
-    res.status(200).json("Api is running");
-});
+app.use("/api/upload", uploadRoutes)
 
-app.use("/api/auth", authRoutes);
+//serve hls files
+app.use("/api/videos", express.static("videos"));
 
 export default app;
+
+
+
