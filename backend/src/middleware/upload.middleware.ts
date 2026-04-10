@@ -8,7 +8,6 @@ import { type Request } from "express";
 import { type FileFilterCallback } from "multer";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-console.log("dirname iss", __dirname)
 
 const uploadPath = path.resolve(__dirname, "../../uploads")
 

@@ -1,69 +1,46 @@
 import { type Request, type Response } from "express";
-import multer from "multer";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { getVideoResolution } from "../services/ffmpeg.service.js";
+import { transcodeToHLS } from "../services/ffmpeg.service.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 class UploadController {
-    uploadVideo = (req: Request, res: Response) => {
+    uploadVideo = async (req: Request, res: Response) => {
         try {
-            if (!req.file) {
-                return res.status(400).json({
-                    success: false,
-                    message: "No video file uploaded",
-                });
+            const file = req.file;
+
+            if (!file) {
+                return res.status(400).json({ message: "No file uploaded" });
             }
 
-            res.status(200).json({
-                success: true,
-                message: "Video uploaded successfully",
-                file: req.file
-            })
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                return res.status(500).json({
-                    message: error.message
-                })
-            }
-            return res.status(500).json({
-                message: "Something went wrong"
-            })
+            // input path
+            const filePath = path.resolve(__dirname, "../../uploads", file.filename);
+
+            // sanitize original filename to prevent path traversal
+            const baseName = path.parse(file.originalname).name.replace(/[^a-zA-Z0-9_-]/g, "_");
+            const outputDir = path.resolve(__dirname, "../../output", baseName);
+
+            console.log("File:", filePath);
+            console.log("Output:", outputDir);
+
+            // transcode
+            const result = await transcodeToHLS(filePath, outputDir);
+
+            // return streaming URL (relative path — let the client construct the full URL)
+            const videoUrl = `/api/videos/${baseName}/master.m3u8`;
+
+            res.json({
+                message: "Video uploaded & processed",
+                videoUrl,
+                result,
+            });
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Error processing video" });
         }
     }
-
-    getVideo = async (req: Request, res: Response) => {
-        try {
-
-            console.log("Inside getVideo")
-            const filename = "bike.mp4";
-            if (!filename) {
-                return res.status(400).json({ success: false, message: "Filename is required" });
-            }
-
-            const __dirname = path.dirname(fileURLToPath(import.meta.url));
-            const uploadPath = path.resolve(__dirname, "../../uploads");
-            const filePath = path.join(uploadPath, filename as string);
-
-            console.log("Filepath", filePath);
-
-            const {width, height} = await getVideoResolution(filePath);
-            console.log("Width, height", width, height);
-            
-
-            // Prevent path traversal
-            if (!filePath.startsWith(uploadPath)) {
-                return res.status(400).json({ success: false, message: "Invalid filename" });
-            }
-
-            res.sendFile(filePath);
-        } catch (error) {
-            console.log("Error", error)
-            return res.status(500).json({ success: false, message: "Something went wrong" });
-        }
-    }; 
-
-
-
 }
 
 export const uploadController = new UploadController();
