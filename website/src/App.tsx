@@ -1,23 +1,11 @@
-import { useEffect, useRef } from 'react';
-import Hls from 'hls.js';
+import VideoPlayer from "./components/VideoPlayer";
 
 const App = () => {
-
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  useEffect(() => {
-    if (Hls.isSupported() && videoRef.current) {
-      const hls = new Hls();
-      hls.loadSource("http://localhost:3000/api/videos/bike/master.m3u8");
-      hls.attachMedia(videoRef.current);
-    } else {
-      if (videoRef.current) {
-        videoRef.current.src = "http://localhost:3000/api/videos/bike/master.m3u8";
-      }
-    }
-  }, []);
-
-  return <video ref={videoRef} controls width={600} />
-}
+  return (
+    <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
+      <VideoPlayer src="http://localhost:3000/api/videos/bike-2c8abfad-5ff0-4b8f-b4d0-fa1b1ed0b8ab/master.m3u8" />
+    </div>
+  );
+};
 
 export default App;
