@@ -1,1 +1,0 @@
-- [Don't write code](feedback_no_write.md) — guide/explain instead of writing to files
